@@ -1,0 +1,59 @@
+@page "/game/{code}"
+@model EmpireWebApp.Pages.Game.PlayModel
+@{
+    ViewData["Title"] = $"Game {Model.Code}";
+}
+
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="text-muted">Game code</div>
+                    <div class="fs-4 fw-bold text-uppercase" id="gameCode">@Model.Code</div>
+                </div>
+                <div class="text-end">
+                    <div class="small text-muted">Player</div>
+                    <div class="fs-5" id="playerName">@Model.PlayerName</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card p-3" id="promptCard">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">Your prompt</h5>
+                <span class="badge bg-secondary" id="promptStatus">Pending</span>
+            </div>
+            <div class="input-group">
+                <input type="text" id="promptInput" class="form-control" placeholder="Enter a secret name" maxlength="80" />
+                <button class="btn btn-primary" id="promptSubmit">Save</button>
+            </div>
+            <div class="small text-muted mt-2">Prompts hide after two full cycles on the TV.</div>
+        </div>
+    </div>
+
+    <div class="col-12">
+        <div class="card p-3" id="actionCard">
+            <h5 class="mb-3">Turn status</h5>
+            <div id="roleStatus" class="mb-3">Loading...</div>
+            <div id="guessActions" class="d-none">
+                <div class="mb-2 fw-semibold">Pick a target</div>
+                <div id="targetList" class="d-flex flex-wrap gap-2"></div>
+            </div>
+            <div id="pendingArea" class="d-none"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            window.empire.initPage({
+                code: '@Model.Code',
+                isTv: false
+            });
+        });
+    </script>
+}

@@ -1,0 +1,29 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Empire";
+}
+
+<div class="row g-4">
+    <div class="col-lg-7">
+        <div class="card p-4">
+            <h1 class="mb-3">Empire party game</h1>
+            <p class="lead">Start a lobby, join from phones, and drive the TV display with live updates powered by SignalR.</p>
+            <div class="d-flex flex-wrap gap-2 mt-3">
+                <a class="btn btn-primary btn-lg" asp-page="/Create">Create a game</a>
+                <a class="btn btn-outline-primary btn-lg" asp-page="/Join">Join a game</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card p-4 h-100">
+            <h5>How it works</h5>
+            <ol class="small mb-0">
+                <li>Create a game to get a TV code.</li>
+                <li>Join from each phone with a display name.</li>
+                <li>Enter your secret prompt on the phone page.</li>
+                <li>Start the game and follow along on the TV page.</li>
+            </ol>
+        </div>
+    </div>
+</div>
