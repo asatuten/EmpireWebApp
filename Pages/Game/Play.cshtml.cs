@@ -9,10 +9,10 @@ using Microsoft.AspNetCore.SignalR;
 namespace EmpireWebApp.Pages.Game;
 
 [IgnoreAntiforgeryToken]
-    public class PlayModel : PageModel
-    {
-        private readonly GameStore _store;
-        private readonly IHubContext<EmpireHub> _hub;
+public class PlayModel : PageModel
+{
+    private readonly GameStore _store;
+    private readonly IHubContext<EmpireHub> _hub;
 
     public PlayModel(GameStore store, IHubContext<EmpireHub> hub)
     {
@@ -24,7 +24,6 @@ namespace EmpireWebApp.Pages.Game;
     public string Code { get; set; } = string.Empty;
 
     public string PlayerName { get; set; } = "";
-    public bool IsHost { get; set; }
 
     public IActionResult OnGet()
     {
@@ -37,7 +36,6 @@ namespace EmpireWebApp.Pages.Game;
         var token = Request.Cookies["empire_player_token"];
         var player = !string.IsNullOrEmpty(token) ? _store.FindPlayerByToken(game, token) : null;
         PlayerName = player?.Name ?? "Unknown";
-        IsHost = IsHostUser(game);
         return Page();
     }
 
@@ -115,11 +113,6 @@ namespace EmpireWebApp.Pages.Game;
             return errorResult!;
         }
 
-        if (!IsHostUser(game!))
-        {
-            return StatusCode(StatusCodes.Status403Forbidden, new { success = false, message = "Only host can start" });
-        }
-
         if (!_store.StartGame(game!))
         {
             return BadRequest(new { success = false, message = "Need at least one player" });
@@ -148,11 +141,6 @@ namespace EmpireWebApp.Pages.Game;
             return errorResult!;
         }
 
-        if (!IsHostUser(game!))
-        {
-            return StatusCode(StatusCodes.Status403Forbidden, new { success = false, message = "Only host can toggle" });
-        }
-
         _store.SetAutoAdvance(game!, request.Enabled);
         await BroadcastUpdate();
         return new JsonResult(new { success = true });
@@ -165,14 +153,7 @@ namespace EmpireWebApp.Pages.Game;
             return errorResult!;
         }
 
-        if (!IsHostUser(game!))
-        {
-            return StatusCode(StatusCodes.Status403Forbidden, new { success = false, message = "Only host can reset" });
-        }
-
         _store.ResetGame(game!);
-        PlayerName = "";
-        IsHost = false;
         await BroadcastUpdate();
         return new JsonResult(new { success = true });
     }
@@ -193,12 +174,6 @@ namespace EmpireWebApp.Pages.Game;
     {
         var token = Request.Cookies["empire_player_token"];
         return string.IsNullOrEmpty(token) ? null : _store.FindPlayerByToken(game, token);
-    }
-
-    private bool IsHostUser(Models.Game game)
-    {
-        var hostToken = Request.Cookies["empire_host_token"];
-        return !string.IsNullOrEmpty(hostToken) && string.Equals(hostToken, game.HostToken, StringComparison.Ordinal);
     }
 
     private Task BroadcastUpdate()

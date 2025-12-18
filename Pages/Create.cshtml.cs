@@ -25,12 +25,6 @@ public class CreateModel : PageModel
         try
         {
             var game = _store.CreateGame();
-            Response.Cookies.Append("empire_host_token", game.HostToken, new CookieOptions
-            {
-                HttpOnly = true,
-                SameSite = SameSiteMode.Lax,
-                Expires = DateTimeOffset.UtcNow.AddDays(7)
-            });
             return RedirectToPage("/Game/Play", new { code = game.Code });
         }
         catch (Exception ex)

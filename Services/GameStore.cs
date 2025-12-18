@@ -20,8 +20,7 @@ public class GameStore
             Phase = GamePhase.Lobby,
             PromptIndex = 0,
             CycleCount = 0,
-            AutoAdvancePrompts = true,
-            HostToken = Guid.NewGuid().ToString("N")
+            AutoAdvancePrompts = true
         };
 
         _games[code] = game;

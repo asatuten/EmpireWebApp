@@ -4,14 +4,12 @@ window.empire = (function () {
         isTv: false,
         connection: null,
         voiceEnabled: false,
-        lastPrompt: null,
-        isHost: false
+        lastPrompt: null
     };
 
     function initPage(options) {
         state.code = options.code;
         state.isTv = options.isTv;
-        state.isHost = !!options.isHost;
         wireUpActions();
         startHub();
         loadState();
@@ -19,21 +17,18 @@ window.empire = (function () {
 
     function wireUpActions() {
         if (state.isTv) {
+            document.getElementById('nextPrompt')?.addEventListener('click', () => postJson('NextPrompt'));
+            document.getElementById('startGame')?.addEventListener('click', () => postJson('Start'));
+            document.getElementById('resetGame')?.addEventListener('click', () => postJson('Reset'));
             document.getElementById('toggleVoice')?.addEventListener('click', () => toggleVoice());
+            const autoToggle = document.getElementById('autoAdvanceToggle');
+            autoToggle?.addEventListener('change', () => postJson('ToggleAuto', { enabled: autoToggle.checked }));
         } else {
             document.getElementById('promptSubmit')?.addEventListener('click', () => {
                 const value = document.getElementById('promptInput').value.trim();
                 if (value.length === 0) return;
                 postJson('SubmitPrompt', { prompt: value });
             });
-
-            if (state.isHost) {
-                document.getElementById('startGame')?.addEventListener('click', () => postJson('Start'));
-                document.getElementById('nextPrompt')?.addEventListener('click', () => postJson('NextPrompt'));
-                document.getElementById('resetGame')?.addEventListener('click', () => postJson('Reset'));
-                const autoToggle = document.getElementById('autoAdvanceToggle');
-                autoToggle?.addEventListener('change', () => postJson('ToggleAuto', { enabled: autoToggle.checked }));
-            }
         }
     }
 
@@ -96,14 +91,11 @@ window.empire = (function () {
         const guessActions = document.getElementById('guessActions');
         const targetList = document.getElementById('targetList');
         const pendingArea = document.getElementById('pendingArea');
-        const lobbyList = document.getElementById('lobbyList');
-        const autoToggle = document.getElementById('autoAdvanceToggle');
 
         targetList.innerHTML = '';
         pendingArea.innerHTML = '';
         guessActions.classList.add('d-none');
         pendingArea.classList.add('d-none');
-        if (lobbyList) lobbyList.innerHTML = '';
 
         const activeGuesser = players.find(p => p.id === data.activeGuesserId);
         if (data.phase === 'Finished') {
@@ -153,21 +145,6 @@ window.empire = (function () {
             const guesserName = activeGuesser ? activeGuesser.name : 'Waiting to start';
             roleStatus.textContent = data.pendingGuess ? 'Resolving pending guess...' : `Waiting... Active guesser: ${guesserName}`;
         }
-
-        if (autoToggle && typeof data.autoAdvancePrompts === 'boolean') {
-            autoToggle.checked = data.autoAdvancePrompts;
-        }
-
-        if (lobbyList) {
-            players
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .forEach(p => {
-                    const pill = document.createElement('span');
-                    pill.className = 'badge bg-light text-dark border';
-                    pill.textContent = `${p.name}${p.promptSubmitted ? ' ✓' : ''}`;
-                    lobbyList.appendChild(pill);
-                });
-        }
     }
 
     function renderTv(data) {
@@ -175,7 +152,12 @@ window.empire = (function () {
         const guesser = players.find(p => p.id === data.activeGuesserId);
         const promptDisplay = document.getElementById('promptDisplay');
         const promptMeta = document.getElementById('promptMeta');
+        const autoToggle = document.getElementById('autoAdvanceToggle');
         const pendingPanel = document.getElementById('pendingPanel');
+
+        if (autoToggle) {
+            autoToggle.checked = !!data.autoAdvancePrompts;
+        }
 
         promptDisplay.textContent = data.currentPrompt || 'Waiting for prompts...';
         promptMeta.textContent = `Prompt ${data.promptIndex + 1} of ${Math.max(data.totalPrompts, 1)} • Cycle ${data.cycleCount + 1}`;
@@ -235,17 +217,8 @@ window.empire = (function () {
 
     function speakPromptIfNeeded(data) {
         if (!state.isTv || !state.voiceEnabled || !window.speechSynthesis) return;
-        if (!data.promptVisible || !data.currentPrompt) {
-            state.lastPrompt = null;
-            return;
-        }
-        if (data.currentPrompt === state.lastPrompt) return;
+        if (!data.promptVisible || !data.currentPrompt || data.currentPrompt === state.lastPrompt) return;
         const utter = new SpeechSynthesisUtterance(data.currentPrompt);
-        utter.onend = () => {
-            if (data.autoAdvancePrompts && data.promptVisible) {
-                setTimeout(() => postJson('NextPrompt'), 1500);
-            }
-        };
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utter);
         state.lastPrompt = data.currentPrompt;

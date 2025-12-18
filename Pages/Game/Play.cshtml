@@ -45,31 +45,6 @@
             <div id="pendingArea" class="d-none"></div>
         </div>
     </div>
-
-    <div class="col-12">
-        <div class="card p-3">
-            <h5 class="mb-3">Lobby</h5>
-            <div id="lobbyList" class="d-flex flex-wrap gap-2 small"></div>
-        </div>
-    </div>
-
-    @if (Model.IsHost)
-    {
-        <div class="col-12">
-            <div class="card p-3" id="hostControls">
-                <h5 class="mb-3">Host controls</h5>
-                <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <button class="btn btn-success" id="startGame">Start game</button>
-                    <button class="btn btn-outline-secondary" id="nextPrompt">Next prompt</button>
-                    <button class="btn btn-outline-danger" id="resetGame">Reset game</button>
-                    <div class="form-check form-switch ms-auto">
-                        <input class="form-check-input" type="checkbox" id="autoAdvanceToggle" checked>
-                        <label class="form-check-label" for="autoAdvanceToggle">Auto-advance prompt on voice</label>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
 </div>
 
 @section Scripts {
@@ -77,8 +52,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             window.empire.initPage({
                 code: '@Model.Code',
-                isTv: false,
-                isHost: @(Model.IsHost.ToString().ToLower())
+                isTv: false
             });
         });
     </script>
