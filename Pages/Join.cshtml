@@ -1,0 +1,28 @@
+@page
+@model EmpireWebApp.Pages.JoinModel
+@{
+    ViewData["Title"] = "Join";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card p-4">
+            <h1 class="h3 mb-3">Join a game</h1>
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label">Game code</label>
+                    <input asp-for="Input.Code" class="form-control text-uppercase" maxlength="6" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Display name</label>
+                    <input asp-for="Input.Name" class="form-control" required />
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Join</button>
+            </form>
+            @if (!string.IsNullOrEmpty(Model.Error))
+            {
+                <div class="alert alert-danger mt-3">@Model.Error</div>
+            }
+        </div>
+    </div>
+</div>
