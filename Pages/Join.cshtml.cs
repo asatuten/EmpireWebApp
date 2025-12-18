@@ -1,16 +1,20 @@
+using EmpireWebApp.Hubs;
 using EmpireWebApp.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.SignalR;
 
 namespace EmpireWebApp.Pages;
 
 public class JoinModel : PageModel
 {
     private readonly GameStore _store;
+    private readonly IHubContext<EmpireHub> _hub;
 
-    public JoinModel(GameStore store)
+    public JoinModel(GameStore store, IHubContext<EmpireHub> hub)
     {
         _store = store;
+        _hub = hub;
     }
 
     [BindProperty]
@@ -22,7 +26,7 @@ public class JoinModel : PageModel
     {
     }
 
-    public IActionResult OnPost()
+    public async Task<IActionResult> OnPost()
     {
         if (string.IsNullOrWhiteSpace(Input.Code) || string.IsNullOrWhiteSpace(Input.Name))
         {
@@ -51,7 +55,14 @@ public class JoinModel : PageModel
             SameSite = SameSiteMode.Lax
         });
 
+        await BroadcastUpdate(game.Code);
+
         return RedirectToPage("/Game/Play", new { code = game.Code });
+    }
+
+    private Task BroadcastUpdate(string code)
+    {
+        return _hub.Clients.Group(EmpireHub.GroupName(code)).SendAsync("GameUpdated");
     }
 }
 
