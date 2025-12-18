@@ -35,6 +35,16 @@
     </div>
 
     <div class="col-12">
+        <div class="card p-3" id="lobbyCard">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5 class="mb-0">Players in lobby</h5>
+                <span class="badge bg-light text-dark" id="playerCount">0</span>
+            </div>
+            <div id="playerList" class="d-flex flex-column gap-2 text-muted">Waiting for players...</div>
+        </div>
+    </div>
+
+    <div class="col-12">
         <div class="card p-3" id="actionCard">
             <h5 class="mb-3">Turn status</h5>
             <div id="roleStatus" class="mb-3">Loading...</div>
@@ -43,6 +53,22 @@
                 <div id="targetList" class="d-flex flex-wrap gap-2"></div>
             </div>
             <div id="pendingArea" class="d-none"></div>
+        </div>
+    </div>
+
+    <div class="col-12 d-none" id="adminCard">
+        <div class="card p-3">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <h5 class="mb-0 me-3">Host controls</h5>
+                <button class="btn btn-success" id="startGame">Start game</button>
+                <button class="btn btn-outline-secondary" id="nextPrompt">Next prompt</button>
+                <button class="btn btn-outline-danger" id="resetGame">Reset game</button>
+                <div class="form-check form-switch ms-auto">
+                    <input class="form-check-input" type="checkbox" id="autoAdvanceToggle" checked>
+                    <label class="form-check-label" for="autoAdvanceToggle">Auto-advance prompt on correct</label>
+                </div>
+            </div>
+            <div class="small text-muted mt-2">Visible only to the game creator on this device.</div>
         </div>
     </div>
 </div>
