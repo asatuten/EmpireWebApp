@@ -113,6 +113,11 @@ public class PlayModel : PageModel
             return errorResult!;
         }
 
+        if (!IsHost(game!))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { success = false, message = "Host only" });
+        }
+
         if (!_store.StartGame(game!))
         {
             return BadRequest(new { success = false, message = "Need at least one player" });
@@ -129,6 +134,11 @@ public class PlayModel : PageModel
             return errorResult!;
         }
 
+        if (!IsHost(game!))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { success = false, message = "Host only" });
+        }
+
         _store.AdvancePrompt(game!);
         await BroadcastUpdate();
         return new JsonResult(new { success = true });
@@ -141,6 +151,11 @@ public class PlayModel : PageModel
             return errorResult!;
         }
 
+        if (!IsHost(game!))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { success = false, message = "Host only" });
+        }
+
         _store.SetAutoAdvance(game!, request.Enabled);
         await BroadcastUpdate();
         return new JsonResult(new { success = true });
@@ -151,6 +166,11 @@ public class PlayModel : PageModel
         if (!TryGetGame(out var game, out var errorResult))
         {
             return errorResult!;
+        }
+
+        if (!IsHost(game!))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new { success = false, message = "Host only" });
         }
 
         _store.ResetGame(game!);
@@ -174,6 +194,13 @@ public class PlayModel : PageModel
     {
         var token = Request.Cookies["empire_player_token"];
         return string.IsNullOrEmpty(token) ? null : _store.FindPlayerByToken(game, token);
+    }
+
+    private bool IsHost(Models.Game game)
+    {
+        var key = $"empire_host_{game.Code}";
+        var hostToken = Request.Cookies[key];
+        return !string.IsNullOrEmpty(hostToken) && hostToken == game.HostToken;
     }
 
     private Task BroadcastUpdate()

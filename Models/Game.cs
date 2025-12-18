@@ -10,6 +10,7 @@ public class Game
     public int PromptIndex { get; set; }
     public int CycleCount { get; set; }
     public bool AutoAdvancePrompts { get; set; } = true;
+    public string HostToken { get; set; } = string.Empty;
     public string? ActiveGuesserId { get; set; }
     public PendingGuess? PendingGuess { get; set; }
     public GamePhase Phase { get; set; } = GamePhase.Lobby;
