@@ -17,6 +17,13 @@
                     <label class="form-label">Display name</label>
                     <input asp-for="Input.Name" class="form-control" required />
                 </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" asp-for="Input.NewDevice" />
+                    <label class="form-check-label" asp-for="Input.NewDevice">
+                        Join as a new player on this device
+                    </label>
+                    <div class="form-text">Check this to keep multiple test players open on one browser.</div>
+                </div>
                 <button type="submit" class="btn btn-primary w-100">Join</button>
             </form>
             @if (!string.IsNullOrEmpty(Model.Error))

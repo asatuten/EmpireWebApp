@@ -36,7 +36,12 @@ public class JoinModel : PageModel
             return Page();
         }
 
-        var existingToken = Request.Cookies["empire_player_token"];
+        string? existingToken = null;
+        if (!Input.NewDevice)
+        {
+            existingToken = Request.Cookies["empire_player_token"];
+        }
+
         var player = _store.AddPlayer(game, Input.Name, existingToken);
 
         Response.Cookies.Append("empire_player_token", player.Token, new CookieOptions
@@ -55,4 +60,6 @@ public class JoinInput
     public string Code { get; set; } = string.Empty;
 
     public string Name { get; set; } = string.Empty;
+
+    public bool NewDevice { get; set; }
 }
