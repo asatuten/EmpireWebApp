@@ -4,7 +4,8 @@ window.empire = (function () {
         isTv: false,
         connection: null,
         voiceEnabled: false,
-        lastPrompt: null
+        lastPrompt: null,
+        advanceTimeout: null
     };
 
     function initPage(options) {
@@ -16,19 +17,35 @@ window.empire = (function () {
     }
 
     function wireUpActions() {
-        if (state.isTv) {
-            document.getElementById('nextPrompt')?.addEventListener('click', () => postJson('NextPrompt'));
-            document.getElementById('startGame')?.addEventListener('click', () => postJson('Start'));
-            document.getElementById('resetGame')?.addEventListener('click', () => postJson('Reset'));
-            document.getElementById('toggleVoice')?.addEventListener('click', () => toggleVoice());
-            const autoToggle = document.getElementById('autoAdvanceToggle');
-            autoToggle?.addEventListener('change', () => postJson('ToggleAuto', { enabled: autoToggle.checked }));
-        } else {
-            document.getElementById('promptSubmit')?.addEventListener('click', () => {
+        document.getElementById('toggleVoice')?.addEventListener('click', () => toggleVoice());
+
+        const promptButton = document.getElementById('promptSubmit');
+        if (promptButton) {
+            promptButton.addEventListener('click', () => {
                 const value = document.getElementById('promptInput').value.trim();
                 if (value.length === 0) return;
                 postJson('SubmitPrompt', { prompt: value });
             });
+        }
+
+        const startBtn = document.getElementById('startGame');
+        if (startBtn) {
+            startBtn.addEventListener('click', () => postJson('Start'));
+        }
+
+        const nextBtn = document.getElementById('nextPrompt');
+        if (nextBtn) {
+            nextBtn.addEventListener('click', () => postJson('NextPrompt'));
+        }
+
+        const resetBtn = document.getElementById('resetGame');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', () => postJson('Reset'));
+        }
+
+        const autoToggle = document.getElementById('autoAdvanceToggle');
+        if (autoToggle) {
+            autoToggle.addEventListener('change', () => postJson('ToggleAuto', { enabled: autoToggle.checked }));
         }
     }
 
@@ -85,6 +102,34 @@ window.empire = (function () {
             if (you.promptSubmitted) {
                 promptInput.placeholder = 'Submitted';
             }
+        }
+
+        renderLobby(players, data);
+
+        const adminCard = document.getElementById('adminCard');
+        const startBtn = document.getElementById('startGame');
+        const nextBtn = document.getElementById('nextPrompt');
+        const resetBtn = document.getElementById('resetGame');
+        const autoToggle = document.getElementById('autoAdvanceToggle');
+        if (adminCard) {
+            if (data.isHost) {
+                adminCard.classList.remove('d-none');
+                if (autoToggle) {
+                    autoToggle.checked = !!data.autoAdvancePrompts;
+                }
+                if (startBtn) {
+                    startBtn.disabled = data.phase !== 'Lobby';
+                }
+            } else {
+                adminCard.classList.add('d-none');
+            }
+        }
+
+        if (nextBtn) {
+            nextBtn.disabled = data.totalPrompts === 0;
+        }
+        if (resetBtn) {
+            resetBtn.disabled = data.phase === 'Lobby' && data.players.length === 0;
         }
 
         const roleStatus = document.getElementById('roleStatus');
@@ -181,6 +226,33 @@ window.empire = (function () {
         speakPromptIfNeeded(data);
     }
 
+    function renderLobby(players, data) {
+        const list = document.getElementById('playerList');
+        const countBadge = document.getElementById('playerCount');
+        if (!list) return;
+
+        if (countBadge) {
+            countBadge.textContent = players.length.toString();
+        }
+
+        if (!players.length) {
+            list.innerHTML = '<div class="text-muted">Waiting for players...</div>';
+            return;
+        }
+
+        list.innerHTML = '';
+        players
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .forEach(p => {
+                const row = document.createElement('div');
+                row.className = 'd-flex align-items-center justify-content-between border rounded px-3 py-2';
+                const status = p.promptSubmitted ? '<span class="badge bg-success">Prompt in</span>' : '<span class="badge bg-secondary">Waiting</span>';
+                const leader = data.phase === 'Playing' && p.leaderId ? ' • recruited' : '';
+                row.innerHTML = `<div class="fw-semibold">${p.name}${leader}</div><div>${status}</div>`;
+                list.appendChild(row);
+            });
+    }
+
     function renderEmpires(players, winnerId) {
         const container = document.getElementById('empireGrid');
         container.innerHTML = '';
@@ -217,8 +289,20 @@ window.empire = (function () {
 
     function speakPromptIfNeeded(data) {
         if (!state.isTv || !state.voiceEnabled || !window.speechSynthesis) return;
-        if (!data.promptVisible || !data.currentPrompt || data.currentPrompt === state.lastPrompt) return;
+        if (!data.promptVisible || !data.currentPrompt) {
+            state.lastPrompt = null;
+            return;
+        }
+        if (data.currentPrompt === state.lastPrompt) return;
+
         const utter = new SpeechSynthesisUtterance(data.currentPrompt);
+        utter.onend = () => {
+            if (state.advanceTimeout) {
+                clearTimeout(state.advanceTimeout);
+            }
+            state.advanceTimeout = setTimeout(() => postJson('NextPrompt'), 1500);
+        };
+
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utter);
         state.lastPrompt = data.currentPrompt;

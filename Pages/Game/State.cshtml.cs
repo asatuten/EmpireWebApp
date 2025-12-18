@@ -30,6 +30,7 @@ public class StateModel : PageModel
         }
 
         var token = Request.Cookies["empire_player_token"];
+        var hostToken = Request.Cookies[$"empire_host_{game.Code}"];
         var isTv = Tv == 1;
 
         PublicState state;
@@ -91,7 +92,8 @@ public class StateModel : PageModel
                 WinnerId = game.WinnerId,
                 WinnerName = game.WinnerId != null ? players.FirstOrDefault(p => p.Id == game.WinnerId)?.Name : null,
                 YourPlayerId = you?.Id,
-                AutoAdvancePrompts = game.AutoAdvancePrompts
+                AutoAdvancePrompts = game.AutoAdvancePrompts,
+                IsHost = !string.IsNullOrEmpty(hostToken) && hostToken == game.HostToken
             };
         }
 
@@ -116,6 +118,7 @@ public class PublicState
     public string? WinnerName { get; set; }
     public string? YourPlayerId { get; set; }
     public bool AutoAdvancePrompts { get; set; }
+    public bool IsHost { get; set; }
 }
 
 public class PlayerView

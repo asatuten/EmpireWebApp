@@ -9,12 +9,13 @@ public class GameStore
     private readonly Random _random = Random.Shared;
     private const string CodeChars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
-    public Game CreateGame()
+    public Game CreateGame(string hostToken)
     {
         var code = GenerateCode();
         var game = new Game
         {
             Code = code,
+            HostToken = hostToken,
             Players = new List<Player>(),
             Prompts = new List<PromptItem>(),
             Phase = GamePhase.Lobby,
