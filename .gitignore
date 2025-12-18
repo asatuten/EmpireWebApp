@@ -1,0 +1,11 @@
+bin/
+obj/
+*.user
+*.swp
+*.suo
+*.userprefs
+.vs/
+*.DS_Store
+.dotnet-install.sh
+wwwroot/lib/
+wwwroot/favicon.ico

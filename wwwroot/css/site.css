@@ -1,0 +1,31 @@
+html, body {
+    height: 100%;
+}
+
+body {
+    background: #f7f7f9;
+}
+
+.card {
+    box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.05);
+}
+
+.prompt-display {
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(2rem, 4vw, 4rem);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.empire-card {
+    min-width: 220px;
+}
+
+.sticky-controls {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
